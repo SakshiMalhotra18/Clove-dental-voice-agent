@@ -1,0 +1,20 @@
+{
+  "example": "Phone normalization edge case",
+  "raw_spoken_input": "nine eight double seven oh four three two one naro",
+  "normalization_steps": {
+    "double seven": "77",
+    "oh": "0",
+    "naro": "0"
+  },
+  "normalized_number": "9877043210",
+  "output": {
+    "full_name": "Rahul Mehta",
+    "phone_number": "9877043210",
+    "city": "Mumbai",
+    "treatment": "Teeth Cleaning",
+    "appointment_date": "2025-04-05",
+    "appointment_time": "11:00",
+    "email": null,
+    "status": "confirmed"
+  }
+}

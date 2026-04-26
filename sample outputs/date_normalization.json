@@ -1,0 +1,20 @@
+{
+  "example": "Date normalization edge case",
+  "raw_spoken_input": "tomorrow 8 AM",
+  "normalization_steps": {
+    "tomorrow": "resolved to next calendar date",
+    "8 AM": "08:00"
+  },
+  "normalized_date": "30 March",
+  "normalized_time": "08:00",
+  "output": {
+    "full_name": "Sneha Patel",
+    "phone_number": "9123456780",
+    "city": "Pune",
+    "treatment": "Dental Checkup",
+    "appointment_date": "2025-03-30",
+    "appointment_time": "08:00",
+    "email": "sneha.p@example.com",
+    "status": "confirmed"
+  }
+}
