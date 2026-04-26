@@ -2,8 +2,7 @@
 
 ## Watch the Full Demo
 
-[![Riley Demo Video](https://img.youtube.com/vi/QprvdWT5qEE/maxresdefault.jpg)](https://youtu.be/QprvdWT5qEE)
-
+### Riley Demo Video 
 **▶️ [Watch on YouTube](https://youtu.be/QprvdWT5qEE)**
 
 ---
