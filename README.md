@@ -1,69 +1,83 @@
-# 🦷 AI Voice Receptionist — Clove Dental
-### Built with Vapi (Riley) · Production-Ready · Voice + Chat
+# 🦷 Riley — AI Voice Receptionist for Clove Dental
+### Production-Ready · Built on Vapi · Voice + Chat · Structured Output
 
-> **"Voice AI is not just LLM + speech. It requires strong normalization, validation, and flow control to behave like a real system."**
-
----
-
-## 📌 Overview
-
-A production-ready AI Voice Receptionist built for **Clove Dental** using **Vapi (Riley)** — handling end-to-end appointment booking over voice and chat, with strict validation, natural conversation flow, and structured backend-ready output.
-
-This agent replaces the front desk for appointment scheduling — handling messy human inputs (mispronunciations, partial phone numbers, inconsistent dates) while keeping the conversation natural and reliable.
+> *"Voice AI is not just LLM + speech. It requires strong normalization, validation, and flow control to behave like a real system."*
 
 ---
 
 ## 🎥 Demo
 
-> 📹 **[Watch the Voice Demo Video]** *(add your video link here)*
-> 
-> 💬 Works in both **voice** and **chat** mode
+> 📹 **[Watch Voice Demo on YouTube](https://youtu.be/QprvdWT5qEE)**  
+> 💬 Works in both **voice call** and **chat** mode
+
+[![Demo Video](https://img.youtube.com/vi/QprvdWT5qEE/maxresdefault.jpg)](https://youtu.be/QprvdWT5qEE)
 
 ---
 
-## ✨ What It Can Do
+## 📌 What Is This?
 
-| Capability | Description |
+**Riley** is a production-ready AI voice receptionist built for **Clove Dental** — one of India's largest dental clinic chains. It handles end-to-end appointment booking over phone/chat, replacing the front desk for scheduling workflows.
+
+The core engineering challenge: **messy human input**. People mispronounce cities, say phone numbers in fragments ("double 4", "oh"), and give vague dates ("tomorrow morning"). Riley normalizes all of it — silently, reliably, without hallucinating — and converts every call into clean, backend-ready structured data.
+
+---
+
+## ✨ Capabilities
+
+| Feature | Detail |
 |---|---|
-| 🗓️ End-to-end booking | treatment → city → contact → schedule — full flow |
-| 📞 Phone normalization | Handles "double 4", "oh" (for zero), partial numbers |
-| 📅 Date normalization | "tomorrow 8 AM" → `30 March, 9:00 AM` |
-| 🛡️ Strict validation | No hallucination, no guessing — re-asks until clean |
-| 🚫 Domain guardrails | Refuses unrelated queries gracefully |
-| 📋 Structured output | Every call → clean JSON: name, phone, city, date, treatment, status |
+| 🗓️ End-to-end booking | Treatment → City → Name → Phone → Date → Confirm |
+| 📞 Phone normalization | `"double 4"` → `44`, `"oh"` → `0`, `"nine eight..."` → `9876543210` |
+| 📅 Date normalization | `"tomorrow 8 AM"` → `30 March, 08:00` · `"20 fourth"` → `24` |
+| 🏙️ City validation | 8 canonical cities · fuzzy match + confirmation before lock |
+| 🛡️ No-hallucination policy | Never guesses missing digits, names, or dates — always re-asks |
+| 🚫 Domain guardrails | Politely refuses all non-dental queries |
+| 📋 Structured output | Every call → clean JSON sent silently to backend |
+| 🔁 Single confirmation | Confirms each field once — no loops, no repetition |
 
 ---
 
-## 🧠 How It Works
+## 🧠 System Architecture
 
 ```
-User (Voice/Chat)
-       │
-       ▼
-  Vapi (Riley) ──── Conversation Flow & Turn Management
-       │
-       ├── Phone Normalization Engine
-       │     └── "double 4" → "44", "oh" → "0"
-       │
-       ├── Date Normalization Engine
-       │     └── "tomorrow 8 AM" → absolute datetime
-       │
-       ├── Validation Layer
-       │     └── re-prompts on invalid inputs, no hallucination
-       │
-       └── Domain Guardrails
-             └── off-topic queries → polite refusal
-       │
-       ▼
-  Structured Output (JSON)
-  {
-    "full_name": "...",
-    "phone_number": "...",
-    "city": "...",
-    "appointment_datetime": "...",
-    "treatment": "...",
-    "status": "confirmed"
-  }
+Caller (Voice / Chat)
+        │
+        ▼
+  ┌─────────────┐
+  │  Vapi (Riley)│  ← LLM-powered conversational layer
+  └──────┬──────┘
+         │
+   ┌─────┴──────────────────────────────────┐
+   │           Normalization Pipeline        │
+   │  ┌──────────────┐  ┌─────────────────┐ │
+   │  │Phone Normalizer│  │ Date Normalizer │ │
+   │  │"double 4"→44  │  │"tomorrow"→30Mar │ │
+   │  └──────────────┘  └─────────────────┘ │
+   │  ┌──────────────┐  ┌─────────────────┐ │
+   │  │City Validator │  │  Name Lock      │ │
+   │  │fuzzy→canonical│  │ exact reuse only│ │
+   │  └──────────────┘  └─────────────────┘ │
+   └─────────────────────────────────────────┘
+         │
+         ▼
+   ┌─────────────┐
+   │  Validation  │  ← no proceed until all fields clean
+   │  Layer       │
+   └──────┬───────┘
+          │
+          ▼
+   ┌─────────────────────────────────────┐
+   │         Structured Output (JSON)     │
+   │  {                                   │
+   │    "full_name": "Priya Sharma",      │
+   │    "phone_number": "9876543210",     │
+   │    "city": "Ahmedabad",              │
+   │    "treatment": "Root Canal",        │
+   │    "appointment_date": "2025-03-30", │
+   │    "appointment_time": "09:00",      │
+   │    "status": "confirmed"             │
+   │  }                                   │
+   └─────────────────────────────────────┘
 ```
 
 ---
@@ -71,54 +85,129 @@ User (Voice/Chat)
 ## 🔑 Key Engineering Decisions
 
 ### 1. Phone Number Normalization
-Human voice inputs for phone numbers are notoriously noisy. The agent handles:
-- **Word-based digits:** "double 4" → `44`, "triple 9" → `999`
-- **Letter substitution:** "oh" → `0`, "I" → `1`
-- **Partial inputs:** Re-asks for missing digits without losing context
-- **Format validation:** Confirms 10-digit Indian mobile numbers before proceeding
+Human voice inputs for phone numbers are notoriously noisy. Riley handles:
+
+| Spoken Input | Normalized Output |
+|---|---|
+| `"double 4"` | `44` |
+| `"triple 9"` | `999` |
+| `"oh"` / `"o"` / `"naro"` | `0` |
+| `"nine eight double seven oh four"` | `987704...` |
+
+**Hard rule:** During confirmation, Riley *only* speaks normalized digits — never echoes raw words like "narrow" or "oh" back to the caller.
+
+---
 
 ### 2. Date & Time Normalization
-Converts natural language time references into absolute datetimes:
-- `"tomorrow"` → resolves to next calendar date
-- `"this Friday"` → resolves to exact date
-- `"morning"` → defaults to `9:00 AM` unless specified
-- All times anchored to IST (Asia/Kolkata)
 
-### 3. Strict No-Hallucination Policy
-The agent **never assumes or guesses** — if a field is unclear:
-- It re-asks with a specific, targeted clarification prompt
-- It does not proceed until all required fields are validated
-- Out-of-scope queries receive a polite deflection
+| Spoken Input | Normalized Output |
+|---|---|
+| `"tomorrow 8 AM"` | `30 March, 08:00` |
+| `"20 fourth March"` | `24 March` |
+| `"day after tomorrow"` | `31 March` |
+| `"next Monday"` | Resolved to absolute date |
 
-### 4. Conversation Flow Control
-Unlike simple chatbots, this agent manages **multi-turn state**:
-- Tracks which fields are collected vs. pending
-- Handles interruptions and corrections mid-conversation
-- Confirms the full booking summary before finalizing
+**Hard rule:** Dates are always output as `DD Month` (e.g., `30 March`). Ordinal words like "thirtieth of March" are strictly forbidden — they cause TTS mispronunciation.
+
+---
+
+### 3. City Canonical Lock
+Allowed cities: **Mumbai · Pune · Ahmedabad · Bangalore · Delhi NCR · Surat · Vadodara · Nashik**
+
+Once confirmed, the city name is **locked** — Riley never re-predicts or re-spells it. This prevents TTS from generating phonetic approximations like "Ahembada" or "Amadabad".
+
+---
+
+### 4. No-Hallucination Validation
+Riley operates under a strict **never-guess** policy:
+- Missing phone digits → re-ask, never infer
+- Unclear city → confirm with closest match before storing
+- Ambiguous date → clarify before normalizing
+- Off-topic query → deflect, never fabricate an answer
+
+---
+
+### 5. Booking Flow (Strict Order)
+```
+1. Treatment type
+2. City (from allowed list)
+3. Full name
+4. Phone number
+5. Email (optional)
+6. Date + Time (accepted together if provided)
+7. Final confirmation summary
+```
+Fields are never reordered. Confirmation happens once — no loops.
 
 ---
 
 ## 📋 Structured Output Schema
 
-Every completed call is converted into backend-ready structured data:
+Every completed conversation silently produces:
 
 ```json
 {
   "full_name": "Priya Sharma",
   "phone_number": "9876543210",
-  "city": "Mumbai",
+  "city": "Ahmedabad",
   "treatment": "Root Canal",
   "appointment_date": "2025-03-30",
   "appointment_time": "09:00",
+  "email": "priya@example.com",
   "status": "confirmed"
 }
 ```
 
-This output can be directly consumed by:
-- CRM systems
-- Calendar / scheduling APIs
+This output is backend-ready for:
+- CRM / patient management systems
+- Calendar & scheduling APIs
+- SMS / WhatsApp confirmation triggers
 - Database pipelines
-- Notification services (SMS, WhatsApp)
+
+---
+
+## 💬 Sample Conversations
+
+### ✅ Phone Normalization
+```
+Riley: What's your phone number?
+User:  Nine eight seven six five four three two one naro
+Riley: I heard 9 8 7 6 5 4 3 2 1 0. Is that correct?
+User:  Yes
+Riley: Perfect, thank you.
+```
+
+### ✅ Date Normalization
+```
+Riley: What date and time works for you?
+User:  Tomorrow 8 AM
+Riley: That would be 30 March at 8 AM. Does that work?
+User:  Yes
+```
+
+### ✅ City Fuzzy Match
+```
+Riley: Which city are you in?
+User:  Ahmedba
+Riley: Did you mean Ahmedabad?
+User:  Yes
+Riley: Got it — Ahmedabad.
+```
+
+### 🚫 Domain Guardrail
+```
+User:  Can you help me find a restaurant nearby?
+Riley: I'm here to help with Clove Dental appointments and services.
+       How may I assist you?
+```
+
+### ✅ Final Confirmation
+```
+Riley: Just to confirm — booking for Priya Sharma at Clove Dental Ahmedabad
+       on 30 March at 9 AM for Root Canal. Is that correct?
+User:  Yes
+Riley: Your appointment is confirmed. You'll receive details shortly.
+```
 
 ---
 
@@ -126,11 +215,12 @@ This output can be directly consumed by:
 
 | Layer | Tool |
 |---|---|
-| Voice AI Platform | [Vapi](https://vapi.ai) (Riley assistant) |
+| Voice AI Platform | [Vapi](https://vapi.ai) |
+| Assistant Name | Riley |
 | Conversation Model | LLM via Vapi |
-| Normalization Logic | Custom prompt engineering + validation rules |
-| Output Format | Structured JSON from conversation logs |
-| Modes | Voice call + Chat |
+| Normalization | Custom prompt engineering (rule-based) |
+| Output | Structured JSON from conversation logs |
+| Modes Supported | Voice call + Chat |
 
 ---
 
@@ -139,73 +229,76 @@ This output can be directly consumed by:
 ```
 clove-dental-voice-agent/
 │
-├── README.md                    # This file
-├── demo/
-│   └── demo_video.mp4           # Voice demo recording (or link)
+├── README.md
 │
 ├── prompts/
-│   ├── system_prompt.md         # Full agent system prompt
-│   ├── normalization_rules.md   # Phone & date normalization logic
-│   └── guardrails.md            # Domain restriction rules
+│   └── system_prompt.md          # Full Riley system prompt
 │
 ├── sample_outputs/
-│   ├── sample_booking_1.json    # Example structured output
-│   ├── sample_booking_2.json    # Edge case: phone normalization
-│   └── sample_booking_3.json    # Edge case: date normalization
+│   ├── booking_confirmed.json     # Standard booking output
+│   ├── phone_normalization.json   # Edge case: "double 4", "oh"
+│   └── date_normalization.json    # Edge case: "tomorrow 8 AM"
+│
+├── demo/
+│   └── README.md                  # Link to demo video
 │
 └── docs/
-    └── architecture.md          # Flow diagram and design notes
+    └── architecture.md            # Flow diagram and design notes
 ```
 
 ---
 
-## 🧪 Sample Conversations
+## 📐 Normalization Rules (Quick Reference)
 
-### ✅ Phone Normalization
+### Phone Digit Map
 ```
-Agent: What's your phone number?
-User:  My number is nine eight double seven oh four three two one six
-Agent: Got it — 9877043216. Is that correct?
-User:  Yes
+zero, oh, o, naro, narrow → 0
+one                        → 1
+two, to, too               → 2
+three                      → 3
+four, for                  → 4
+five                       → 5
+six                        → 6
+seven                      → 7
+eight, ate                 → 8
+nine                       → 9
+
+double X → XX   (e.g., double 4 → 44)
+triple X → XXX  (e.g., triple 9 → 999)
 ```
 
-### ✅ Date Normalization
+### Date Format Rule
 ```
-Agent: When would you like your appointment?
-User:  Tomorrow morning
-Agent: I've got tomorrow, 30th March at 9:00 AM. Does that work?
-User:  Make it 11
-Agent: Updated to 30th March at 11:00 AM. Confirmed!
-```
+Always output: DD Month
+Example:       30 March, 5 April, 24 March
 
-### 🚫 Domain Guardrail
-```
-User:  Can you help me order food?
-Agent: I'm Riley, Clove Dental's appointment assistant. 
-       I can only help with dental appointment bookings. 
-       Would you like to schedule a visit?
+Never output:  thirtieth of March
+               March 30th
+               20 fourth March
 ```
 
 ---
 
 ## 🔍 Key Learnings
 
-1. **Voice AI ≠ LLM + Speech** — You need normalization, validation, and flow control to handle real human inputs reliably.
+1. **Voice AI ≠ LLM + Speech** — normalization, validation, and state control are what make it actually work in production.
 
-2. **Phone numbers are hard** — People say them in dozens of ways. A robust normalization layer is non-negotiable for any voice booking system.
+2. **Phone numbers are the hardest field** — people say them in dozens of formats. A strict digit-mapping layer is non-negotiable.
 
-3. **Structured output is the real value** — The agent isn't just a chatbot. Every call produces backend-ready data, making it actually usable in production pipelines.
+3. **TTS breaks on ambiguous text** — date formats like "thirtieth of March" cause mispronunciation. `DD Month` format solves this cleanly.
 
-4. **Guardrails prevent scope creep** — Without strict domain restrictions, voice agents get pulled into all sorts of unrelated conversations.
+4. **City name locking prevents hallucination** — without a lock rule, the model re-generates city names on each turn, introducing phonetic drift.
+
+5. **Structured output is the real product** — the agent's value isn't just conversation; it's that every call produces clean, usable data.
 
 ---
 
-## 🚀 Use Cases This Pattern Fits
+## 🚀 This Pattern Fits
 
-- Dental / medical clinic receptionists
-- Restaurant reservation systems  
-- Salon & spa booking agents
-- Any domain requiring: collect info → validate → confirm → log
+- Medical / dental clinic receptionists
+- Restaurant or salon booking agents
+- Logistics pickup scheduling
+- Any domain: **collect → validate → confirm → log**
 
 ---
 
@@ -224,4 +317,4 @@ MIT License — see [LICENSE](LICENSE) for details.
 
 ---
 
-> ⭐ If this project helped you understand Voice AI, give it a star!
+> ⭐ If this helped you understand production Voice AI, give it a star!
