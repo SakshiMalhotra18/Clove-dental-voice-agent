@@ -1,0 +1,13 @@
+{
+  "example": "Standard confirmed booking",
+  "output": {
+    "full_name": "Priya Sharma",
+    "phone_number": "9876543210",
+    "city": "Ahmedabad",
+    "treatment": "Root Canal",
+    "appointment_date": "2025-03-30",
+    "appointment_time": "09:00",
+    "email": "priya.sharma@example.com",
+    "status": "confirmed"
+  }
+}
